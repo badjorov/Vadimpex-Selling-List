@@ -271,10 +271,15 @@ function exportExcel() {
 // Updated PDF export with pagination
 function exportPDF() {
     try {
-        // Initialize jsPDF
+        // Initialize jsPDF - using the UMD version correctly
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('p', 'pt');
+        const doc = new jsPDF();
         
+        // Manually add the autoTable plugin if it's not auto-injected
+        if (typeof doc.autoTable !== 'function') {
+            window.jspdf.AutoTable(doc);
+        }
+
         // Add title
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
@@ -285,11 +290,11 @@ function exportPDF() {
         doc.setFont('helvetica', 'normal');
         doc.text(`Generated: ${new Date().toLocaleString()}`, 40, 60);
 
-        // Prepare data for the table
+        // Prepare data
         const headers = Object.keys(currentData[0]);
         const body = currentData.map(row => headers.map(header => row[header]));
 
-        // Generate the table
+        // Generate table
         doc.autoTable({
             head: [headers],
             body: body,
@@ -298,35 +303,24 @@ function exportPDF() {
             styles: {
                 fontSize: 9,
                 cellPadding: 4,
-                overflow: 'linebreak',
                 halign: 'left'
             },
             headStyles: {
-                fillColor: [192, 0, 0], // VADIMPEX red
+                fillColor: [192, 0, 0],
                 textColor: [255, 255, 255],
                 fontStyle: 'bold'
             },
             alternateRowStyles: {
-                fillColor: [255, 245, 245] // Light red
-            },
-            didDrawPage: function(data) {
-                // Footer with page number
-                const pageCount = doc.internal.getNumberOfPages();
-                doc.setFontSize(10);
-                doc.text(
-                    `Page ${data.pageNumber} of ${pageCount}`,
-                    data.settings.margin.left,
-                    doc.internal.pageSize.height - 20
-                );
+                fillColor: [255, 245, 245]
             }
         });
 
-        // Save the PDF
+        // Save PDF
         doc.save(`vadimpex-products-${new Date().toISOString().slice(0,10)}.pdf`);
         
     } catch (error) {
         console.error('PDF export error:', error);
-        alert('Error generating PDF. Please try again.');
+        alert('Error generating PDF. Please try again or contact support.');
     }
 }
 

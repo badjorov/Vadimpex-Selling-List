@@ -275,106 +275,105 @@ function exportPDF() {
     
     // Title
     doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
     doc.text('VADIMPEX Product List', 40, 40);
     
     // Date
     doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
     doc.text(`Generated: ${new Date().toLocaleString()}`, 40, 60);
     
-    // Create a temporary container for PDF
-    const pdfContainer = document.createElement('div');
-    pdfContainer.style.position = 'absolute';
-    pdfContainer.style.left = '-9999px';
-    pdfContainer.style.width = '700px';
-    pdfContainer.style.backgroundColor = 'white';
-    pdfContainer.style.padding = '20px';
-    pdfContainer.style.boxSizing = 'border-box';
-    
-    // Clone the table
-    const originalTable = document.querySelector('table');
-    if (!originalTable) return;
-    
-    const table = originalTable.cloneNode(true);
-    table.style.width = '100%';
-    table.style.fontSize = '10pt';
-    
-    // Apply styles for PDF
-    const styles = document.createElement('style');
-    styles.innerHTML = `
-        th {
-            background-color: #c00000 !important;
-            color: white !important;
-            padding: 8px !important;
-            font-weight: bold !important;
-        }
-        td {
-            padding: 6px !important;
-            font-size: 9pt !important;
-        }
-        tr:nth-child(odd) {
-            background-color: #fff5f5 !important;
-        }
-    `;
-    
-    pdfContainer.appendChild(styles);
-    pdfContainer.appendChild(table);
-    document.body.appendChild(pdfContainer);
-    
-    // Generate PDF with pagination
-    html2canvas(pdfContainer, {
-        scale: 2,
-        useCORS: true,
-        logging: false
-    }).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const imgProps = canvas;
-        const pdfWidth = doc.internal.pageSize.getWidth() - 80;
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        
-        // Calculate how many pages we need
-        const pageHeight = doc.internal.pageSize.getHeight();
-        let position = 80;
-        let remainingHeight = pdfHeight;
-        let currentPage = 1;
-        
-        while (remainingHeight > 0) {
-            // Add new page if not the first
-            if (currentPage > 1) {
-                doc.addPage();
+    // Prepare table data
+    const headers = Object.keys(currentData[0]);
+    const data = currentData.map(row => {
+        return headers.map(header => {
+            // Format status values
+            if (header.toLowerCase().includes('status')) {
+                return {
+                    content: row[header],
+                    styles: { 
+                        fillColor: getStatusColor(row[header]),
+                        textColor: getStatusTextColor(row[header])
+                    }
+                };
             }
-            
-            // Calculate how much of the image to show on this page
-            const pageSliceHeight = Math.min(remainingHeight, pageHeight - 100);
-            const cropY = pdfHeight - remainingHeight;
-            
-            doc.addImage(
-                imgData,
-                'PNG',
-                40,
-                position,
-                pdfWidth,
-                pageSliceHeight,
-                null,
-                'FAST',
-                0,
-                cropY
-            );
-            
-            // Add page number
-            doc.setFontSize(10);
-            doc.text(`Page ${currentPage}`, pdfWidth + 20, pageHeight - 20);
-            
-            // Update position for next page
-            position = 40; // Reset to top for new pages
-            remainingHeight -= pageSliceHeight;
-            currentPage++;
-        }
-        
-        doc.save(`vadimpex-products-${new Date().toISOString().slice(0,10)}.pdf`);
-        
-        // Clean up
-        document.body.removeChild(pdfContainer);
+            return row[header];
+        });
     });
+    
+    // AutoTable configuration
+    const tableOptions = {
+        startY: 80,
+        head: [headers],
+        body: data,
+        theme: 'grid',
+        styles: {
+            fontSize: 9,
+            cellPadding: 4,
+            overflow: 'linebreak',
+            halign: 'left'
+        },
+        headStyles: {
+            fillColor: [192, 0, 0], // VADIMPEX red
+            textColor: [255, 255, 255],
+            fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+            fillColor: [255, 245, 245] // Light red
+        },
+        columnStyles: {
+            0: { cellWidth: 'auto' },
+            // Add specific column widths if needed
+        },
+        margin: { left: 40, right: 40 },
+        didDrawPage: function(data) {
+            // Page numbers
+            const pageCount = doc.internal.getNumberOfPages();
+            doc.setFontSize(10);
+            doc.text(`Page ${data.pageNumber} of ${pageCount}`, 
+                     data.settings.margin.left, 
+                     doc.internal.pageSize.height - 20);
+        }
+    };
+    
+    // Generate table
+    doc.autoTable(tableOptions);
+    
+    // Save PDF
+    doc.save(`vadimpex-products-${new Date().toISOString().slice(0,10)}.pdf`);
+}
+
+// Helper functions for status colors
+function getStatusColor(status) {
+    if (!status) return null;
+    
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes('available') || statusLower.includes('in stock')) {
+        return [236, 255, 236]; // Light green
+    }
+    if (statusLower.includes('low') || statusLower.includes('limited')) {
+        return [255, 252, 230]; // Light yellow
+    }
+    if (statusLower.includes('out') || statusLower.includes('sold')) {
+        return [255, 236, 236]; // Light red
+    }
+    return null;
+}
+
+function getStatusTextColor(status) {
+    if (!status) return [0, 0, 0];
+    
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes('available') || statusLower.includes('in stock')) {
+        return [46, 204, 113]; // Green
+    }
+    if (statusLower.includes('low') || statusLower.includes('limited')) {
+        return [243, 156, 18]; // Orange
+    }
+    if (statusLower.includes('out') || statusLower.includes('sold')) {
+        return [231, 76, 60]; // Red
+    }
+    return [0, 0, 0];
 }
 
 // UI States

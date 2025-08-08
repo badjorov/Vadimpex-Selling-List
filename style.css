@@ -100,3 +100,12 @@ footer {
         font-size: 0.9rem;
     }
 }
+
+.error {
+  color: #dc2626;
+  background: #fee2e2;
+  padding: 15px;
+  border-radius: 4px;
+  text-align: center;
+  margin: 20px 0;
+}

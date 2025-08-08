@@ -2,20 +2,30 @@
 const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0xg3Yy-RTLmgOM4pLYpTz_2Z27312GhQttLF1Tjo1rDBPq65tS2J_GbDPnBDQpNdtTl-7O4ZqDvv5/pub?gid=1729295615&single=true&output=csv';
 
 // Initialize Tabletop
-function init() {
-  Tabletop.init({
-    key: SPREADSHEET_URL,
-    callback: processData,
-    simpleSheet: true,
-    postProcess: function(row) {
-      // Clean row data
-      Object.keys(row).forEach(key => {
-        row[key] = row[key] ? row[key].trim() : '';
-      });
-      return row;
-    }
-  }).then(data => console.log("Tabletop loaded", data))
-    .catch(err => console.error("Tabletop error", err));
+async function init() {
+  try {
+    const response = await fetch(SPREADSHEET_URL);
+    const csvData = await response.text();
+    const data = parseCSV(csvData);
+    processData(data);
+  } catch (err) {
+    console.error("Error loading data:", err);
+    document.getElementById('products-table').innerHTML = 
+      '<p class="error">Error loading data. Please refresh or try later.</p>';
+  }
+}
+
+function parseCSV(csv) {
+  const rows = csv.split('\n');
+  const headers = rows[0].split(',').map(h => h.trim());
+  
+  return rows.slice(1).map(row => {
+    const values = row.split(',');
+    return headers.reduce((obj, header, index) => {
+      obj[header] = values[index] ? values[index].trim() : '';
+      return obj;
+    }, {});
+  });
 }
 
 document.getElementById('search-input').addEventListener('input', (e) => {

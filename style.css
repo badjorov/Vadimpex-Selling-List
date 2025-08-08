@@ -1,11 +1,15 @@
-/* Base styles */
+/* Base styles with RED theme */
 :root {
-    --primary: #1a3a6c; /* VADIMPEX blue */
-    --secondary: #f0f7ff;
+    --primary: #c00000; /* VADIMPEX red */
+    --primary-dark: #9a0000;
+    --primary-light: #ff4d4d;
+    --secondary: #fff0f0; /* Light red background */
     --accent: #e63946;
     --text: #2d3748;
     --light-text: #718096;
-    --border: #cbd5e0;
+    --border: #e0c0c0;
+    --row-even: #ffffff;
+    --row-odd: #fff5f5;
 }
 
 * {
@@ -21,7 +25,7 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
-    background-color: #f8fafc;
+    background-color: #fafafa;
 }
 
 header {
@@ -74,12 +78,12 @@ h1 {
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-.search-container, .refresh-container {
+.search-container, .refresh-container, .export-container {
     display: flex;
     align-items: center;
     gap: 10px;
     flex: 1;
-    min-width: 300px;
+    min-width: 200px;
 }
 
 #search-input {
@@ -91,7 +95,7 @@ h1 {
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
 }
 
-#clear-search, #refresh-btn {
+#clear-search, #refresh-btn, #export-btn {
     padding: 12px 20px;
     background: var(--primary);
     color: white;
@@ -100,16 +104,55 @@ h1 {
     cursor: pointer;
     font-size: 0.95rem;
     transition: background 0.2s;
+    display: flex;
+    align-items: center;
 }
 
-#clear-search:hover, #refresh-btn:hover {
-    background: #152a4d;
+#export-btn::after {
+    content: "▾";
+    margin-left: 8px;
+    font-size: 0.8em;
+}
+
+#clear-search:hover, #refresh-btn:hover, #export-btn:hover {
+    background: var(--primary-dark);
 }
 
 #last-updated {
     font-size: 0.9rem;
     color: var(--light-text);
     margin-left: 10px;
+}
+
+/* Export options */
+#export-options {
+    display: none;
+    position: absolute;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 10;
+    margin-top: 5px;
+}
+
+#export-options button {
+    display: block;
+    width: 100%;
+    padding: 10px 20px;
+    background: white;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#export-options button:hover {
+    background: var(--secondary);
+}
+
+.export-container {
+    position: relative;
 }
 
 /* Table styles */
@@ -143,12 +186,17 @@ td {
     vertical-align: top;
 }
 
+/* ALTERNATING ROW COLORS */
+tr:nth-child(odd) {
+    background-color: var(--row-odd);
+}
+
 tr:nth-child(even) {
-    background-color: var(--secondary);
+    background-color: var(--row-even);
 }
 
 tr:hover {
-    background-color: #e6f0ff;
+    background-color: #ffecec;
 }
 
 /* Status indicators */
@@ -227,6 +275,10 @@ footer {
     .controls {
         flex-direction: column;
         gap: 15px;
+    }
+    
+    .export-container {
+        width: 100%;
     }
 }
 

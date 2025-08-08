@@ -47,16 +47,22 @@ header {
     margin-right: 20px;
 }
 
-.contact-info {
-    flex: 1;
-    min-width: 300px;
+/* Contact links */
+.contact-info a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: all 0.2s;
+    position: relative;
 }
 
-.contact-info p {
-    margin: 8px 0;
-    font-size: 0.95rem;
-    color: var(--text);
-    line-height: 1.5;
+.contact-info a:hover {
+    text-decoration: underline;
+}
+
+.copy-email::after {
+    content: ' 📋';
+    font-size: 0.8em;
+    opacity: 0.6;
 }
 
 h1 {

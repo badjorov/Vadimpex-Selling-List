@@ -83,12 +83,13 @@ function renderTable(data) {
         return;
     }
 
+    // Create table elements
     const table = document.createElement('table');
-    
-    // Create header
     const thead = document.createElement('thead');
+    const tbody = document.createElement('tbody');
     const headerRow = document.createElement('tr');
     
+    // Create headers
     Object.keys(data[0]).forEach(key => {
         const th = document.createElement('th');
         th.textContent = key;
@@ -98,8 +99,7 @@ function renderTable(data) {
     thead.appendChild(headerRow);
     table.appendChild(thead);
     
-    // Create body
-    const tbody = document.createElement('tbody');
+    // Create rows
     data.forEach(item => {
         const row = document.createElement('tr');
         Object.entries(item).forEach(([key, value]) => {
@@ -116,8 +116,12 @@ function renderTable(data) {
         tbody.appendChild(row);
     });
     
-    document.getElementById('products-table').innerHTML = '';
-    document.getElementById('products-table').appendChild(table);
+    table.appendChild(tbody);
+    
+    // Replace existing content
+    const container = document.getElementById('products-table');
+    container.innerHTML = '';
+    container.appendChild(table);
 }
 
 // Get CSS class for status values
@@ -264,28 +268,112 @@ function exportExcel() {
     }
 }
 
+// Updated PDF export with pagination
 function exportPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'pt', 'a4');
     
-    // Add title
+    // Title
     doc.setFontSize(18);
     doc.text('VADIMPEX Product List', 40, 40);
     
-    // Add date
+    // Date
     doc.setFontSize(10);
     doc.text(`Generated: ${new Date().toLocaleString()}`, 40, 60);
     
-    // Add table
-    const table = document.querySelector('table');
-    html2canvas(table).then(canvas => {
+    // Create a temporary container for PDF
+    const pdfContainer = document.createElement('div');
+    pdfContainer.style.position = 'absolute';
+    pdfContainer.style.left = '-9999px';
+    pdfContainer.style.width = '700px';
+    pdfContainer.style.backgroundColor = 'white';
+    pdfContainer.style.padding = '20px';
+    pdfContainer.style.boxSizing = 'border-box';
+    
+    // Clone the table
+    const originalTable = document.querySelector('table');
+    if (!originalTable) return;
+    
+    const table = originalTable.cloneNode(true);
+    table.style.width = '100%';
+    table.style.fontSize = '10pt';
+    
+    // Apply styles for PDF
+    const styles = document.createElement('style');
+    styles.innerHTML = `
+        th {
+            background-color: #c00000 !important;
+            color: white !important;
+            padding: 8px !important;
+            font-weight: bold !important;
+        }
+        td {
+            padding: 6px !important;
+            font-size: 9pt !important;
+        }
+        tr:nth-child(odd) {
+            background-color: #fff5f5 !important;
+        }
+    `;
+    
+    pdfContainer.appendChild(styles);
+    pdfContainer.appendChild(table);
+    document.body.appendChild(pdfContainer);
+    
+    // Generate PDF with pagination
+    html2canvas(pdfContainer, {
+        scale: 2,
+        useCORS: true,
+        logging: false
+    }).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
-        const imgProps = doc.getImageProperties(imgData);
+        const imgProps = canvas;
         const pdfWidth = doc.internal.pageSize.getWidth() - 80;
         const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
         
-        doc.addImage(imgData, 'PNG', 40, 80, pdfWidth, pdfHeight);
+        // Calculate how many pages we need
+        const pageHeight = doc.internal.pageSize.getHeight();
+        let position = 80;
+        let remainingHeight = pdfHeight;
+        let currentPage = 1;
+        
+        while (remainingHeight > 0) {
+            // Add new page if not the first
+            if (currentPage > 1) {
+                doc.addPage();
+            }
+            
+            // Calculate how much of the image to show on this page
+            const pageSliceHeight = Math.min(remainingHeight, pageHeight - 100);
+            const cropY = pdfHeight - remainingHeight;
+            
+            doc.addImage(
+                imgData,
+                'PNG',
+                40,
+                position,
+                pdfWidth,
+                pageSliceHeight,
+                null,
+                'FAST',
+                0,
+                cropY
+            );
+            
+            // Add page number
+            doc.setFontSize(10);
+            doc.text(`Page ${currentPage}`, pdfWidth + 20, pageHeight - 20);
+            
+            // Update position for next page
+            position = 40; // Reset to top for new pages
+            remainingHeight -= pageSliceHeight;
+            currentPage++;
+        }
+        
         doc.save(`vadimpex-products-${new Date().toISOString().slice(0,10)}.pdf`);
+        
+        // Clean up
+        document.body.removeChild(pdfContainer);
     });
 }
 
@@ -312,6 +400,31 @@ function updateTimestamp() {
         `${dateString} ${timeString}`;
 }
 
+// Email copy functionality
+function setupEmailCopy() {
+    document.querySelectorAll('.copy-email').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = link.dataset.email;
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(email).then(() => {
+                const originalText = link.textContent;
+                link.textContent = 'Copied!';
+                
+                // Revert after 2 seconds
+                setTimeout(() => {
+                    link.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Copy failed:', err);
+                // Fallback to mailto if clipboard fails
+                window.location.href = `mailto:${email}`;
+            });
+        });
+    });
+}
+
 // Event listeners
 function setupEventListeners() {
     document.getElementById('refresh-btn').addEventListener('click', async () => {
@@ -333,6 +446,9 @@ function setupEventListeners() {
             console.log("Auto-refresh error:", err);
         }
     }, 300000); // 5 minutes
+    
+    // Setup email copy
+    setupEmailCopy();
 }
 
 // Initialize when page loads

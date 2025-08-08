@@ -83,13 +83,12 @@ function renderTable(data) {
         return;
     }
 
-    // Create table elements
     const table = document.createElement('table');
+    
+    // Create header
     const thead = document.createElement('thead');
-    const tbody = document.createElement('tbody');
     const headerRow = document.createElement('tr');
     
-    // Create headers
     Object.keys(data[0]).forEach(key => {
         const th = document.createElement('th');
         th.textContent = key;
@@ -99,7 +98,8 @@ function renderTable(data) {
     thead.appendChild(headerRow);
     table.appendChild(thead);
     
-    // Create rows
+    // Create body
+    const tbody = document.createElement('tbody');
     data.forEach(item => {
         const row = document.createElement('tr');
         Object.entries(item).forEach(([key, value]) => {
@@ -116,12 +116,8 @@ function renderTable(data) {
         tbody.appendChild(row);
     });
     
-    table.appendChild(tbody);
-    
-    // Replace existing content
-    const container = document.getElementById('products-table');
-    container.innerHTML = '';
-    container.appendChild(table);
+    document.getElementById('products-table').innerHTML = '';
+    document.getElementById('products-table').appendChild(table);
 }
 
 // Get CSS class for status values
@@ -268,64 +264,21 @@ function exportExcel() {
     }
 }
 
-// PDF export using html2canvas (last working version)
 function exportPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'pt', 'a4');
     
-    // Title
+    // Add title
     doc.setFontSize(18);
     doc.text('VADIMPEX Product List', 40, 40);
     
-    // Date
+    // Add date
     doc.setFontSize(10);
     doc.text(`Generated: ${new Date().toLocaleString()}`, 40, 60);
     
-    // Create a temporary container for PDF
-    const pdfContainer = document.createElement('div');
-    pdfContainer.style.position = 'absolute';
-    pdfContainer.style.left = '-9999px';
-    pdfContainer.style.width = '700px';
-    pdfContainer.style.backgroundColor = 'white';
-    pdfContainer.style.padding = '20px';
-    pdfContainer.style.boxSizing = 'border-box';
-    
-    // Clone the table
-    const originalTable = document.querySelector('table');
-    if (!originalTable) return;
-    
-    const table = originalTable.cloneNode(true);
-    table.style.width = '100%';
-    table.style.fontSize = '10pt';
-    
-    // Apply styles for PDF
-    const styles = document.createElement('style');
-    styles.innerHTML = `
-        th {
-            background-color: #c00000 !important;
-            color: white !important;
-            padding: 8px !important;
-            font-weight: bold !important;
-        }
-        td {
-            padding: 6px !important;
-            font-size: 9pt !important;
-        }
-        tr:nth-child(odd) {
-            background-color: #fff5f5 !important;
-        }
-    `;
-    
-    pdfContainer.appendChild(styles);
-    pdfContainer.appendChild(table);
-    document.body.appendChild(pdfContainer);
-    
-    // Generate PDF
-    html2canvas(pdfContainer, {
-        scale: 2,
-        useCORS: true,
-        logging: false
-    }).then(canvas => {
+    // Add table
+    const table = document.querySelector('table');
+    html2canvas(table).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
         const imgProps = doc.getImageProperties(imgData);
         const pdfWidth = doc.internal.pageSize.getWidth() - 80;
@@ -333,9 +286,6 @@ function exportPDF() {
         
         doc.addImage(imgData, 'PNG', 40, 80, pdfWidth, pdfHeight);
         doc.save(`vadimpex-products-${new Date().toISOString().slice(0,10)}.pdf`);
-        
-        // Clean up
-        document.body.removeChild(pdfContainer);
     });
 }
 
@@ -362,31 +312,6 @@ function updateTimestamp() {
         `${dateString} ${timeString}`;
 }
 
-// Email copy functionality
-function setupEmailCopy() {
-    document.querySelectorAll('.copy-email').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const email = link.dataset.email;
-            
-            // Copy to clipboard
-            navigator.clipboard.writeText(email).then(() => {
-                const originalText = link.textContent;
-                link.textContent = 'Copied!';
-                
-                // Revert after 2 seconds
-                setTimeout(() => {
-                    link.textContent = originalText;
-                }, 2000);
-            }).catch(err => {
-                console.error('Copy failed:', err);
-                // Fallback to mailto if clipboard fails
-                window.location.href = `mailto:${email}`;
-            });
-        });
-    });
-}
-
 // Event listeners
 function setupEventListeners() {
     document.getElementById('refresh-btn').addEventListener('click', async () => {
@@ -408,9 +333,6 @@ function setupEventListeners() {
             console.log("Auto-refresh error:", err);
         }
     }, 300000); // 5 minutes
-    
-    // Setup email copy
-    setupEmailCopy();
 }
 
 // Initialize when page loads

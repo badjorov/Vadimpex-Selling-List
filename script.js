@@ -1,6 +1,25 @@
 // Configuration
 const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0xg3Yy-RTLmgOM4pLYpTz_2Z27312GhQttLF1Tjo1rDBPq65tS2J_GbDPnBDQpNdtTl-7O4ZqDvv5/pub?gid=1729295615&single=true&output=csv';
 
+// PDF Libraries Loader - Add this new function
+function loadPDFLibraries() {
+    return new Promise((resolve) => {
+        if (window.jspdf && window.jspdf.AutoTable) {
+            resolve();
+        } else {
+            const script1 = document.createElement('script');
+            script1.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+            script1.onload = () => {
+                const script2 = document.createElement('script');
+                script2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js';
+                script2.onload = resolve;
+                document.head.appendChild(script2);
+            };
+            document.head.appendChild(script1);
+        }
+    });
+}
+
 // State management
 let currentData = [];
 let lastUpdateTime = null;
@@ -193,7 +212,7 @@ function setupExport() {
     
     // Handle export format selection
     exportOptions.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', async (e) => {  // Add async here
             const format = e.target.dataset.format;
             exportOptions.style.display = 'none';
             
@@ -205,7 +224,13 @@ function setupExport() {
                     exportExcel();
                     break;
                 case 'pdf':
-                    exportPDF();
+                    try {
+                        await loadPDFLibraries();  // Add this line
+                        exportPDF();
+                    } catch (err) {
+                        console.error("PDF export failed:", err);
+                        alert("Failed to generate PDF. Please try again.");
+                    }
                     break;
             }
         });
@@ -266,6 +291,25 @@ function exportExcel() {
         console.error('Excel export error:', e);
         alert('Error exporting to Excel. Please try again.');
     }
+}
+
+// Nuclear option - ensure plugins are loaded
+function loadPDFLibraries() {
+    return new Promise((resolve) => {
+        if (window.jspdf && window.jspdf.AutoTable) {
+            resolve();
+        } else {
+            const script1 = document.createElement('script');
+            script1.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+            script1.onload = () => {
+                const script2 = document.createElement('script');
+                script2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js';
+                script2.onload = resolve;
+                document.head.appendChild(script2);
+            };
+            document.head.appendChild(script1);
+        }
+    });
 }
 
 // Updated PDF export with pagination

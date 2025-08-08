@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="style.css">
     <!-- Google Analytics with error handling -->
     <script>
-      // Initialize without causing errors if blocked
       window.dataLayer = window.dataLayer || [];
       function gtag(){ 
         try {
@@ -19,8 +18,6 @@
         }
       }
       gtag('js', new Date());
-      
-      // Safe config
       try {
         gtag('config', 'G-3229K1S157');
       } catch (e) {
@@ -29,6 +26,10 @@
     </script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-3229K1S157" 
             onerror="console.log('GTM script blocked')"></script>
+    <!-- Export libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <header>
@@ -50,6 +51,14 @@
             <div class="refresh-container">
                 <button id="refresh-btn">Refresh Data</button>
                 <span id="last-updated"></span>
+            </div>
+            <div class="export-container">
+                <button id="export-btn">Export List ▾</button>
+                <div id="export-options">
+                    <button data-format="csv">CSV</button>
+                    <button data-format="xlsx">Excel</button>
+                    <button data-format="pdf">PDF</button>
+                </div>
             </div>
         </div>
         <div id="products-table">

@@ -1,18 +1,27 @@
 // Configuration
-const SPREADSHEET_URL = https://docs.google.com/spreadsheets/d/e/2PACX-1vS0xg3Yy-RTLmgOM4pLYpTz_2Z27312GhQttLF1Tjo1rDBPq65tS2J_GbDPnBDQpNdtTl-7O4ZqDvv5/pub?gid=1729295615&single=true&output=csv;
+const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0xg3Yy-RTLmgOM4pLYpTz_2Z27312GhQttLF1Tjo1rDBPq65tS2J_GbDPnBDQpNdtTl-7O4ZqDvv5/pub?gid=1729295615&single=true&output=csv';
 
 // Initialize Tabletop
 function init() {
-    Tabletop.init({
-        key: SPREADSHEET_URL,
-        callback: processData,
-        simpleSheet: true
-    });
+  Tabletop.init({
+    key: SPREADSHEET_URL,
+    callback: processData,
+    simpleSheet: true,
+    postProcess: function(row) {
+      // Clean row data
+      Object.keys(row).forEach(key => {
+        row[key] = row[key] ? row[key].trim() : '';
+      });
+      return row;
+    }
+  }).then(data => console.log("Tabletop loaded", data))
+    .catch(err => console.error("Tabletop error", err));
 }
 
 // Process sheet data
 function processData(data, tabletop) {
-    if (data.length === 0) {
+  console.log("Raw data received:", data);  
+if (data.length === 0) {
         document.getElementById('products-table').innerHTML = '<p>No products available</p>';
         return;
     }

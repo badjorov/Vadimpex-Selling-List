@@ -268,63 +268,75 @@ function exportExcel() {
     }
 }
 
-// Professional PDF export using jspdf-autotable
+// PDF export using html2canvas (last working version)
 function exportPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'pt', 'a4');
     
     // Title
     doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
     doc.text('VADIMPEX Product List', 40, 40);
     
     // Date
     doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
     doc.text(`Generated: ${new Date().toLocaleString()}`, 40, 60);
     
-    // Prepare table data
-    const headers = Object.keys(currentData[0]);
-    const data = currentData.map(row => {
-        return headers.map(header => row[header]);
-    });
+    // Create a temporary container for PDF
+    const pdfContainer = document.createElement('div');
+    pdfContainer.style.position = 'absolute';
+    pdfContainer.style.left = '-9999px';
+    pdfContainer.style.width = '700px';
+    pdfContainer.style.backgroundColor = 'white';
+    pdfContainer.style.padding = '20px';
+    pdfContainer.style.boxSizing = 'border-box';
     
-    // AutoTable configuration
-    const tableOptions = {
-        startY: 80,
-        head: [headers],
-        body: data,
-        theme: 'grid',
-        styles: {
-            fontSize: 9,
-            cellPadding: 4,
-            overflow: 'linebreak',
-            halign: 'left'
-        },
-        headStyles: {
-            fillColor: [192, 0, 0], // VADIMPEX red
-            textColor: [255, 255, 255],
-            fontStyle: 'bold'
-        },
-        alternateRowStyles: {
-            fillColor: [255, 245, 245] // Light red
-        },
-        margin: { left: 40, right: 40 },
-        didDrawPage: function(data) {
-            // Page numbers
-            const pageCount = doc.internal.getNumberOfPages();
-            doc.setFontSize(10);
-            doc.text(`Page ${data.pageNumber} of ${pageCount}`, 
-                     data.settings.margin.left, 
-                     doc.internal.pageSize.height - 20);
+    // Clone the table
+    const originalTable = document.querySelector('table');
+    if (!originalTable) return;
+    
+    const table = originalTable.cloneNode(true);
+    table.style.width = '100%';
+    table.style.fontSize = '10pt';
+    
+    // Apply styles for PDF
+    const styles = document.createElement('style');
+    styles.innerHTML = `
+        th {
+            background-color: #c00000 !important;
+            color: white !important;
+            padding: 8px !important;
+            font-weight: bold !important;
         }
-    };
+        td {
+            padding: 6px !important;
+            font-size: 9pt !important;
+        }
+        tr:nth-child(odd) {
+            background-color: #fff5f5 !important;
+        }
+    `;
     
-    // Generate table
-    doc.autoTable(tableOptions);
+    pdfContainer.appendChild(styles);
+    pdfContainer.appendChild(table);
+    document.body.appendChild(pdfContainer);
     
-    // Save PDF
-    doc.save(`vadimpex-products-${new Date().toISOString().slice(0,10)}.pdf`);
+    // Generate PDF
+    html2canvas(pdfContainer, {
+        scale: 2,
+        useCORS: true,
+        logging: false
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const imgProps = doc.getImageProperties(imgData);
+        const pdfWidth = doc.internal.pageSize.getWidth() - 80;
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        
+        doc.addImage(imgData, 'PNG', 40, 80, pdfWidth, pdfHeight);
+        doc.save(`vadimpex-products-${new Date().toISOString().slice(0,10)}.pdf`);
+        
+        // Clean up
+        document.body.removeChild(pdfContainer);
+    });
 }
 
 // UI States

@@ -4,26 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Your Product List</title>
+    <meta name="description" content="VADIMPEX selling list - real-time updated product inventory">
+    <title>VADIMPEX - Selling List</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-3229K1S157"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-3229K1S157', { 
-    page_title: document.title,
-    page_location: location.href,
-    page_path: location.pathname
-  });
-</script>
+    <!-- Google Analytics with error handling -->
+    <script>
+      // Initialize without causing errors if blocked
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ 
+        try {
+          dataLayer.push(arguments);
+        } catch (e) {
+          console.log("Analytics blocked");
+        }
+      }
+      gtag('js', new Date());
+      
+      // Safe config
+      try {
+        gtag('config', 'G-3229K1S157');
+      } catch (e) {
+        console.log("GA config blocked");
+      }
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3229K1S157" 
+            onerror="console.log('GTM script blocked')"></script>
 </head>
 <body>
     <header>
-        <img src="assets/logo.png" alt="Company Logo" class="logo">
+        <img src="assets/logo.png" alt="VADIMPEX Logo" class="logo">
         <div class="contact-info">
             <p>Nikolay Badjorov: nikolay.badjorov@vadimpex.com | WhatsApp +4369914117733</p>
             <p>Georgi Filipov: georgi.filipov@vadimpex.com | WhatsApp +436765777777</p>
@@ -33,18 +42,27 @@
 
     <main>
         <h1>VADIMPEX Selling List</h1>
-        <div id="search-container">
-            <input type="text" id="search-input" placeholder="Search products...">
+        <div class="controls">
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Search products...">
+                <button id="clear-search">Clear</button>
+            </div>
+            <div class="refresh-container">
+                <button id="refresh-btn">Refresh Data</button>
+                <span id="last-updated"></span>
+            </div>
         </div>
-        <div id="products-table"></div>
+        <div id="products-table">
+            <div class="loading">Loading product data...</div>
+        </div>
+        <div id="product-count"></div>
     </main>
 
     <footer>
         <p>&copy; 2025 VADIMPEX Handles GmbH | Updated automatically from Google Sheets</p>
+        <p>Last refreshed: <span id="footer-time"></span></p>
     </footer>
 
-    <!-- Load Tabletop.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.6.2/tabletop.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

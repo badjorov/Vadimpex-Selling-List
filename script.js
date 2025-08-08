@@ -75,7 +75,7 @@ function parseCSV(csv) {
     });
 }
 
-// Render data to table
+// Render data to table - FIXED RENDERING ISSUE
 function renderTable(data) {
     if (!data || data.length === 0) {
         document.getElementById('products-table').innerHTML = 
@@ -83,12 +83,13 @@ function renderTable(data) {
         return;
     }
 
+    // Create table elements
     const table = document.createElement('table');
-    
-    // Create header
     const thead = document.createElement('thead');
+    const tbody = document.createElement('tbody');
     const headerRow = document.createElement('tr');
     
+    // Create headers
     Object.keys(data[0]).forEach(key => {
         const th = document.createElement('th');
         th.textContent = key;
@@ -98,8 +99,7 @@ function renderTable(data) {
     thead.appendChild(headerRow);
     table.appendChild(thead);
     
-    // Create body
-    const tbody = document.createElement('tbody');
+    // Create rows - FIXED ROW CREATION
     data.forEach(item => {
         const row = document.createElement('tr');
         Object.entries(item).forEach(([key, value]) => {
@@ -116,8 +116,12 @@ function renderTable(data) {
         tbody.appendChild(row);
     });
     
-    document.getElementById('products-table').innerHTML = '';
-    document.getElementById('products-table').appendChild(table);
+    table.appendChild(tbody);
+    
+    // Replace existing content
+    const container = document.getElementById('products-table');
+    container.innerHTML = '';
+    container.appendChild(table);
 }
 
 // Get CSS class for status values
@@ -264,6 +268,7 @@ function exportExcel() {
     }
 }
 
+// FIXED PDF EXPORT
 function exportPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'pt', 'a4');
@@ -276,9 +281,47 @@ function exportPDF() {
     doc.setFontSize(10);
     doc.text(`Generated: ${new Date().toLocaleString()}`, 40, 60);
     
-    // Add table
-    const table = document.querySelector('table');
-    html2canvas(table).then(canvas => {
+    // Create a temporary container for PDF
+    const pdfContainer = document.createElement('div');
+    pdfContainer.style.position = 'absolute';
+    pdfContainer.style.left = '-9999px';
+    pdfContainer.style.width = '700px';
+    pdfContainer.style.backgroundColor = 'white';
+    pdfContainer.style.padding = '20px';
+    pdfContainer.style.boxSizing = 'border-box';
+    
+    // Clone the table
+    const table = document.querySelector('table').cloneNode(true);
+    table.style.width = '100%';
+    table.style.fontSize = '10pt';
+    
+    // Apply styles for PDF
+    const styles = document.createElement('style');
+    styles.innerHTML = `
+        th {
+            background-color: #c00000 !important;
+            color: white !important;
+            padding: 8px !important;
+        }
+        td {
+            padding: 6px !important;
+            font-size: 9pt !important;
+        }
+        tr:nth-child(odd) {
+            background-color: #fff5f5 !important;
+        }
+    `;
+    
+    pdfContainer.appendChild(styles);
+    pdfContainer.appendChild(table);
+    document.body.appendChild(pdfContainer);
+    
+    // Generate PDF
+    html2canvas(pdfContainer, {
+        scale: 2, // Higher quality
+        useCORS: true,
+        logging: false
+    }).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
         const imgProps = doc.getImageProperties(imgData);
         const pdfWidth = doc.internal.pageSize.getWidth() - 80;
@@ -286,6 +329,9 @@ function exportPDF() {
         
         doc.addImage(imgData, 'PNG', 40, 80, pdfWidth, pdfHeight);
         doc.save(`vadimpex-products-${new Date().toISOString().slice(0,10)}.pdf`);
+        
+        // Clean up
+        document.body.removeChild(pdfContainer);
     });
 }
 

@@ -177,6 +177,118 @@ function setupSearch() {
     });
 }
 
+// Export functionality
+function setupExport() {
+    const exportBtn = document.getElementById('export-btn');
+    const exportOptions = document.getElementById('export-options');
+    
+    // Toggle export options
+    exportBtn.addEventListener('click', () => {
+        exportOptions.style.display = exportOptions.style.display === 'block' ? 'none' : 'block';
+    });
+    
+    // Handle export format selection
+    exportOptions.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const format = e.target.dataset.format;
+            exportOptions.style.display = 'none';
+            
+            switch(format) {
+                case 'csv':
+                    exportCSV();
+                    break;
+                case 'xlsx':
+                    exportExcel();
+                    break;
+                case 'pdf':
+                    exportPDF();
+                    break;
+            }
+        });
+    });
+    
+    // Close export options when clicking elsewhere
+    document.addEventListener('click', (e) => {
+        if (!exportBtn.contains(e.target) && !exportOptions.contains(e.target)) {
+            exportOptions.style.display = 'none';
+        }
+    });
+}
+
+function exportCSV() {
+    if (!currentData.length) return;
+    
+    // Create CSV content
+    const headers = Object.keys(currentData[0]);
+    const csvRows = [
+        headers.join(','),
+        ...currentData.map(row => 
+            headers.map(fieldName => {
+                const value = row[fieldName];
+                // Escape quotes and wrap in quotes if contains comma
+                return /,/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+            }).join(',')
+        )
+    ];
+    
+    const csvString = csvRows.join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    // Create download link
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `vadimpex-products-${new Date().toISOString().slice(0,10)}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function exportExcel() {
+    if (!currentData.length) return;
+    
+    try {
+        // Create worksheet
+        const ws = XLSX.utils.json_to_sheet(currentData);
+        
+        // Create workbook
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Products');
+        
+        // Generate file and download
+        XLSX.writeFile(wb, `vadimpex-products-${new Date().toISOString().slice(0,10)}.xlsx`);
+    } catch (e) {
+        console.error('Excel export error:', e);
+        alert('Error exporting to Excel. Please try again.');
+    }
+}
+
+function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'pt', 'a4');
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text('VADIMPEX Product List', 40, 40);
+    
+    // Add date
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 40, 60);
+    
+    // Add table
+    const table = document.querySelector('table');
+    html2canvas(table).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const imgProps = doc.getImageProperties(imgData);
+        const pdfWidth = doc.internal.pageSize.getWidth() - 80;
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        
+        doc.addImage(imgData, 'PNG', 40, 80, pdfWidth, pdfHeight);
+        doc.save(`vadimpex-products-${new Date().toISOString().slice(0,10)}.pdf`);
+    });
+}
+
 // UI States
 function showLoadingState() {
     document.getElementById('products-table').innerHTML = 
@@ -227,6 +339,7 @@ function setupEventListeners() {
 window.addEventListener('DOMContentLoaded', () => {
     init();
     setupSearch();
+    setupExport();
     setupEventListeners();
     
     // Track page view

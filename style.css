@@ -47,22 +47,16 @@ header {
     margin-right: 20px;
 }
 
-/* Contact links */
-.contact-info a {
-    color: var(--primary);
-    text-decoration: none;
-    transition: all 0.2s;
-    position: relative;
+.contact-info {
+    flex: 1;
+    min-width: 300px;
 }
 
-.contact-info a:hover {
-    text-decoration: underline;
-}
-
-.copy-email::after {
-    content: ' 📋';
-    font-size: 0.8em;
-    opacity: 0.6;
+.contact-info p {
+    margin: 8px 0;
+    font-size: 0.95rem;
+    color: var(--text);
+    line-height: 1.5;
 }
 
 h1 {
@@ -203,6 +197,24 @@ tr:nth-child(even) {
 
 tr:hover {
     background-color: #ffecec;
+}
+
+/* Contact links */
+.contact-info a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.contact-info a:hover {
+    text-decoration: underline;
+}
+
+.copy-email::after {
+    content: ' 📋';
+    font-size: 0.8em;
+    opacity: 0.6;
 }
 
 /* Status indicators */

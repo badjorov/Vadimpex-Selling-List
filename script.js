@@ -268,7 +268,7 @@ function exportExcel() {
     }
 }
 
-// Updated PDF export with pagination
+// Professional PDF export using jspdf-autotable
 function exportPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'pt', 'a4');
@@ -286,19 +286,7 @@ function exportPDF() {
     // Prepare table data
     const headers = Object.keys(currentData[0]);
     const data = currentData.map(row => {
-        return headers.map(header => {
-            // Format status values
-            if (header.toLowerCase().includes('status')) {
-                return {
-                    content: row[header],
-                    styles: { 
-                        fillColor: getStatusColor(row[header]),
-                        textColor: getStatusTextColor(row[header])
-                    }
-                };
-            }
-            return row[header];
-        });
+        return headers.map(header => row[header]);
     });
     
     // AutoTable configuration
@@ -321,10 +309,6 @@ function exportPDF() {
         alternateRowStyles: {
             fillColor: [255, 245, 245] // Light red
         },
-        columnStyles: {
-            0: { cellWidth: 'auto' },
-            // Add specific column widths if needed
-        },
         margin: { left: 40, right: 40 },
         didDrawPage: function(data) {
             // Page numbers
@@ -341,39 +325,6 @@ function exportPDF() {
     
     // Save PDF
     doc.save(`vadimpex-products-${new Date().toISOString().slice(0,10)}.pdf`);
-}
-
-// Helper functions for status colors
-function getStatusColor(status) {
-    if (!status) return null;
-    
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes('available') || statusLower.includes('in stock')) {
-        return [236, 255, 236]; // Light green
-    }
-    if (statusLower.includes('low') || statusLower.includes('limited')) {
-        return [255, 252, 230]; // Light yellow
-    }
-    if (statusLower.includes('out') || statusLower.includes('sold')) {
-        return [255, 236, 236]; // Light red
-    }
-    return null;
-}
-
-function getStatusTextColor(status) {
-    if (!status) return [0, 0, 0];
-    
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes('available') || statusLower.includes('in stock')) {
-        return [46, 204, 113]; // Green
-    }
-    if (statusLower.includes('low') || statusLower.includes('limited')) {
-        return [243, 156, 18]; // Orange
-    }
-    if (statusLower.includes('out') || statusLower.includes('sold')) {
-        return [231, 76, 60]; // Red
-    }
-    return [0, 0, 0];
 }
 
 // UI States

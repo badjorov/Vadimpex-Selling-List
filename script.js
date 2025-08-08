@@ -270,78 +270,64 @@ function exportExcel() {
 
 // Updated PDF export with pagination
 function exportPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm'
-    });
+    try {
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'pt');
+        
+        // Add title
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.text('VADIMPEX Product List', 40, 40);
+        
+        // Add date
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Generated: ${new Date().toLocaleString()}`, 40, 60);
 
-    // Title
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('VADIMPEX Product List', 15, 15);
-    
-    // Date
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Generated: ${new Date().toLocaleString()}`, 15, 20);
+        // Prepare data for the table
+        const headers = Object.keys(currentData[0]);
+        const body = currentData.map(row => headers.map(header => row[header]));
 
-    // Prepare table data
-    const headers = Object.keys(currentData[0]);
-    const data = currentData.map(row => headers.map(header => row[header]));
+        // Generate the table
+        doc.autoTable({
+            head: [headers],
+            body: body,
+            startY: 80,
+            margin: { left: 40 },
+            styles: {
+                fontSize: 9,
+                cellPadding: 4,
+                overflow: 'linebreak',
+                halign: 'left'
+            },
+            headStyles: {
+                fillColor: [192, 0, 0], // VADIMPEX red
+                textColor: [255, 255, 255],
+                fontStyle: 'bold'
+            },
+            alternateRowStyles: {
+                fillColor: [255, 245, 245] // Light red
+            },
+            didDrawPage: function(data) {
+                // Footer with page number
+                const pageCount = doc.internal.getNumberOfPages();
+                doc.setFontSize(10);
+                doc.text(
+                    `Page ${data.pageNumber} of ${pageCount}`,
+                    data.settings.margin.left,
+                    doc.internal.pageSize.height - 20
+                );
+            }
+        });
 
-    // Table settings
-    const columns = headers.map(header => ({
-        header: header,
-        dataKey: header
-    }));
-
-    // Calculate column widths based on content
-    const colWidths = headers.map(header => {
-        const maxLength = Math.max(
-            header.length,
-            ...currentData.map(row => String(row[header]).length)
-        );
-        return Math.min(60, Math.max(20, maxLength * 2));
-    });
-
-    // Generate table
-    doc.autoTable({
-        head: [headers],
-        body: data,
-        startY: 25,
-        margin: { left: 15 },
-        styles: {
-            fontSize: 8,
-            cellPadding: 2,
-            overflow: 'linebreak',
-            halign: 'left'
-        },
-        headStyles: {
-            fillColor: [192, 0, 0], // VADIMPEX red
-            textColor: [255, 255, 255],
-            fontStyle: 'bold'
-        },
-        alternateRowStyles: {
-            fillColor: [255, 245, 245] // Light red
-        },
-        columnStyles: Object.fromEntries(
-            headers.map((header, i) => [header, { cellWidth: colWidths[i] }])
-        ),
-        didDrawPage: function(data) {
-            // Page numbers
-            doc.setFontSize(10);
-            doc.text(
-                `Page ${data.pageNumber}`,
-                doc.internal.pageSize.width - 15,
-                doc.internal.pageSize.height - 10,
-                { align: 'right' }
-            );
-        }
-    });
-
-    // Save PDF
-    doc.save(`vadimpex-products-${new Date().toISOString().slice(0,10)}.pdf`);
+        // Save the PDF
+        doc.save(`vadimpex-products-${new Date().toISOString().slice(0,10)}.pdf`);
+        
+    } catch (error) {
+        console.error('PDF export error:', error);
+        alert('Error generating PDF. Please try again.');
+    }
 }
 
 // UI States

@@ -1,1 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Product List</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Analytics (optional) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YOURID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-YOURID');
+    </script>
+</head>
+<body>
+    <header>
+        <img src="assets/logo.png" alt="Company Logo" class="logo">
+        <div class="contact-info">
+            <p>John Doe: john@example.com | (123) 456-7890</p>
+            <p>Jane Smith: jane@example.com | (098) 765-4321</p>
+        </div>
+    </header>
 
+    <main>
+        <h1>Current Product List</h1>
+        <div id="search-container">
+            <input type="text" id="search-input" placeholder="Search products...">
+        </div>
+        <div id="products-table"></div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Your Company | Updated automatically from Google Sheets</p>
+    </footer>
+
+    <!-- Load Tabletop.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.6.2/tabletop.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

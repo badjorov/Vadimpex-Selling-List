@@ -18,6 +18,12 @@ function init() {
     .catch(err => console.error("Tabletop error", err));
 }
 
+document.getElementById('search-input').addEventListener('input', (e) => {
+  gtag('event', 'search', {
+    search_term: e.target.value
+  });
+});
+
 // Process sheet data
 function processData(data, tabletop) {
   console.log("Raw data received:", data);  
@@ -92,5 +98,3 @@ function autoRefresh() {
     }, 300000); // 5 minutes
 }
 
-// Call after init()
-autoRefresh();

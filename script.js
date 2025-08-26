@@ -1,11 +1,18 @@
 // script.js - Using JSONP approach
 // Make sure this URL matches your actual deployed Apps Script URL
-const scriptUrl = 'https://script.google.com/macros/s/AKfycby_YlnIx39W54SygtTAx1K-eM1Wf4jSDBOHQej6tyV57fnl2vOnLPNtTkgrfRRA1lSJuw/exec';
+const scriptUrl = 'https://script.google.com/macros/s/AKfycbzmu5gKCM8jeOXRedye5wpSi3z3hU3D4kkSLcLS28kpIJqtefjyczYfkVODZCg5hr1sNg/exec';
+let productData = [];
+let dataLastUpdated = '';
+
+// script.js - Using JSONP approach
+// Make sure this URL matches your actual deployed Apps Script URL
+const scriptUrl = 'https://script.google.com/macros/s/AKfycbzmu5gKCM8jeOXRedye5wpSi3z3hU3D4kkSLcLS28kpIJqtefjyczYfkVODZCg5hr1sNg/exec';
 let productData = [];
 let dataLastUpdated = '';
 
 function loadProductData() {
-    console.log("Loading data from: ", scriptUrl);
+    console.log("Loading data using JSONP technique");
+    console.log("Script URL:", scriptUrl);
     
     // Show loading state
     const productsTable = document.getElementById('products-table');
@@ -13,26 +20,54 @@ function loadProductData() {
         productsTable.innerHTML = '<div class="loading">Loading product data...</div>';
     }
     
+    // Create unique callback name to avoid conflicts
+    const callbackName = 'handleData_' + Date.now();
+    
+    // Create the global callback function
+    window[callbackName] = function(response) {
+        console.log('JSONP Response received:', response);
+        handleData(response);
+        
+        // Clean up
+        delete window[callbackName];
+    };
+    
     // Create a script element for JSONP
     const script = document.createElement('script');
-    script.src = scriptUrl + '?callback=handleData&random=' + new Date().getTime();
+    const url = scriptUrl + '?callback=' + callbackName + '&nocache=' + new Date().getTime();
+    console.log("Full request URL:", url);
+    script.src = url;
     
     // Add error handling for script loading
     script.onerror = function() {
         showError('Failed to load data from server. Please check your connection and try again.');
-        console.error('Script loading failed');
+        console.error('Script loading failed for URL:', url);
+        delete window[callbackName];
     };
     
     // Clean up script after use
     script.onload = function() {
+        console.log('Script loaded successfully');
         setTimeout(() => {
             if (script.parentNode) {
                 script.parentNode.removeChild(script);
             }
-        }, 1000);
+        }, 2000);
     };
     
     document.head.appendChild(script);
+    
+    // Add timeout to handle cases where the callback never fires
+    setTimeout(() => {
+        if (window[callbackName]) {
+            console.error('JSONP timeout - callback never fired');
+            showError('Request timeout. Please try refreshing the page.');
+            delete window[callbackName];
+            if (script.parentNode) {
+                script.parentNode.removeChild(script);
+            }
+        }
+    }, 15000); // 15 second timeout
 }
 
 // This function will be called by the JSONP response

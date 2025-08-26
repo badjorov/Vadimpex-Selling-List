@@ -8,7 +8,7 @@ let dataLastUpdated = '';
 
 // Main function to load the product data
 function loadProductData() {
-    console.log("Loading data from: ", csvUrl); // Helpful for debugging
+    console.log("Loading data from: ", csvUrl);
     fetch(csvUrl)
         .then(response => {
             if (!response.ok) {
@@ -17,7 +17,7 @@ function loadProductData() {
             return response.text();
         })
         .then(csvText => {
-            processData(csvText); // Process the CSV text into product data
+            processData(csvText);
         })
         .catch(error => {
             console.error('Error loading data:', error);
@@ -41,9 +41,11 @@ function processData(csvText) {
 
     // Process each line of data (skipping the header line)
     for (let i = 1; i < lines.length; i++) {
-        // *** THE ERROR WAS ON THIS LINE ***
-        // Fixed the syntax: replaced .replace(/"/g', '')) with .replace(/"/g, ''))
-        const values = lines[i].split(',').map(value => value.trim().replace(/"/g, ''));
+        // FIXED LINE: Clean syntax for replacing quotes
+        const values = lines[i].split(',').map(value => {
+            return value.trim().replace(/"/g, '');
+        });
+        
         const product = {};
 
         // Create a product object using the headers as keys
@@ -62,13 +64,13 @@ function processData(csvText) {
 
     // Populate the table with the new data
     populateProductTable();
-    document.getElementById('error-message').textContent = ''; // Clear any errors
+    document.getElementById('error-message').textContent = '';
 }
 
 // Function to create and display the product table
 function populateProductTable() {
     const tableBody = document.getElementById('product-table');
-    tableBody.innerHTML = ''; // Clear the table first
+    tableBody.innerHTML = '';
 
     if (productData.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="100%" style="text-align: center;">No products found.</td></tr>';
@@ -84,7 +86,6 @@ function populateProductTable() {
         
         // Create a cell for each header
         headers.forEach(header => {
-            // Skip the 'Last Updated' header for the table, we display it separately
             if (header === 'Last Updated') return;
             
             const cell = document.createElement('td');
@@ -98,5 +99,3 @@ function populateProductTable() {
 
 // Load the product data when the page is ready
 document.addEventListener('DOMContentLoaded', loadProductData);
-
-// ALL PDF CODE HAS BEEN REMOVED FROM THIS FILE

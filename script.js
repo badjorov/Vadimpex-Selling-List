@@ -40,7 +40,7 @@ function processData(csvText) {
 
     // Process each line of data (skipping the header line)
     for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(value => value.trim().replace(/"/g, ''));
+        const values = lines[i].split(',').map(value => value.trim().replace(/"/g', ''));
         const product = {};
 
         // Create a product object using the headers as keys
@@ -93,33 +93,7 @@ function populateProductTable() {
     });
 }
 
-// COMMENTED OUT THE UNNECESSARY CURRENCY/CALCULATION CODE
-/*
-let exchangeRates = {};
-let lastUpdated = '';
-
-function populateCurrencies() {
-    // ... currency code ...
-}
-
-function calculate() {
-    // ... calculation code ...
-}
-*/
-
-// Remove event listeners for the currency converter inputs since we don't need them
-/*
-document.getElementById('amount').removeEventListener('input', calculate);
-document.getElementById('from').removeEventListener('change', calculate);
-document.getElementById('to').removeEventListener('change', calculate);
-*/
-
 // Load the product data when the page is ready
 document.addEventListener('DOMContentLoaded', loadProductData);
 
-// COMMENTED OUT THE BROKEN PDF EXPORT FUNCTIONALITY
-/*
-function exportToPDF() {
-    // ... existing pdf code ...
-}
-*/
+// ALL PDF CODE HAS BEEN REMOVED FROM THIS FILE

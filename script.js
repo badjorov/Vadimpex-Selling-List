@@ -1,12 +1,6 @@
 // script.js - Using JSONP approach
 // Make sure this URL matches your actual deployed Apps Script URL
-const scriptUrl = 'https://script.google.com/macros/s/AKfycbzmu5gKCM8jeOXRedye5wpSi3z3hU3D4kkSLcLS28kpIJqtefjyczYfkVODZCg5hr1sNg/exec';
-let productData = [];
-let dataLastUpdated = '';
-
-// script.js - Using JSONP approach
-// Make sure this URL matches your actual deployed Apps Script URL
-const scriptUrl = 'https://script.google.com/macros/s/AKfycbzmu5gKCM8jeOXRedye5wpSi3z3hU3D4kkSLcLS28kpIJqtefjyczYfkVODZCg5hr1sNg/exec';
+const scriptUrl = 'https://script.google.com/macros/s/AKfycby_YlnIx39W54SygtTAx1K-eM1Wf4jSDBOHQej6tyV57fnl2vOnLPNtTkgrfRRA1lSJuw/exec';
 let productData = [];
 let dataLastUpdated = '';
 

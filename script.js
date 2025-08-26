@@ -8,6 +8,7 @@ let dataLastUpdated = '';
 
 // Main function to load the product data
 function loadProductData() {
+    console.log("Loading data from: ", csvUrl); // Helpful for debugging
     fetch(csvUrl)
         .then(response => {
             if (!response.ok) {
@@ -40,7 +41,9 @@ function processData(csvText) {
 
     // Process each line of data (skipping the header line)
     for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(value => value.trim().replace(/"/g', ''));
+        // *** THE ERROR WAS ON THIS LINE ***
+        // Fixed the syntax: replaced .replace(/"/g', '')) with .replace(/"/g, ''))
+        const values = lines[i].split(',').map(value => value.trim().replace(/"/g, ''));
         const product = {};
 
         // Create a product object using the headers as keys

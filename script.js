@@ -1,6 +1,6 @@
 // script.js
 // URL for the Google Apps Script that fetches our product data CSV
-const csvUrl = 'https://script.google.com/macros/s/AKfycby5f13M-UOjuRLGcIhGkDD_WVvCzI2XIRrhLSXfc4aYjc2CFOSaz9eIcQiVwgTiOa6mHw/exec';
+const csvUrl = 'https://script.google.com/macros/s/AKfycbwAZQo3ojcm5bCCqWCXLsIL1Np3WEnnUbHZ9jXoorow0Asz_96FWMsvQ3P3SWeMVmrmzg/exec';
 
 // This object will hold our product data
 let productData = [];

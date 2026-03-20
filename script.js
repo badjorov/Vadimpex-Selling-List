@@ -233,22 +233,15 @@ function initializeRefresh() {
 
 // Export functionality
 function initializeExport() {
-    const exportBtn = document.getElementById('export-btn');
-    const exportOptions = document.getElementById('export-options');
-    
-    if (exportBtn && exportOptions) {
-        exportBtn.addEventListener('click', () => {
-            exportOptions.style.display = exportOptions.style.display === 'block' ? 'none' : 'block';
-        });
-        
-        // Handle export option clicks
-        exportOptions.addEventListener('click', (e) => {
-            const format = e.target.getAttribute('data-format');
-            if (format && productData.length > 0) {
-                exportData(format);
-                exportOptions.style.display = 'none';
-            }
-        });
+    const csvBtn = document.getElementById('export-csv-btn');
+    const xlsxBtn = document.getElementById('export-xlsx-btn');
+
+    if (csvBtn) {
+        csvBtn.addEventListener('click', () => exportData('csv'));
+    }
+
+    if (xlsxBtn) {
+        xlsxBtn.addEventListener('click', () => exportData('xlsx'));
     }
 }
 
@@ -306,13 +299,4 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSearch();
     initializeRefresh();
     initializeExport();
-    
-    // Close export dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        const exportOptions = document.getElementById('export-options');
-        const exportBtn = document.getElementById('export-btn');
-        if (exportOptions && !exportBtn.contains(e.target)) {
-            exportOptions.style.display = 'none';
-        }
-    });
 });

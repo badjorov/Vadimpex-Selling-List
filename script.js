@@ -1,6 +1,13 @@
 // script.js - Using JSONP approach
 // Make sure this URL matches your actual deployed Apps Script URL
 const scriptUrl = 'https://script.google.com/macros/s/AKfycby_YlnIx39W54SygtTAx1K-eM1Wf4jSDBOHQej6tyV57fnl2vOnLPNtTkgrfRRA1lSJuw/exec';
+
+// Stable direct-download URLs (for right-click copy)
+const exportUrls = {
+    csv:  scriptUrl + '?format=csv',
+    xlsx: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0xg3Yy-RTLmgOM4pLYpTz_2Z27312GhQttLF1Tjo1rDBPq65tS2J_GbDPnBDQpNdtTl-7O4ZqDvv5/pub?gid=1729295615&single=true&output=xlsx'
+};
+
 let productData = [];
 let dataLastUpdated = '';
 
@@ -8,38 +15,30 @@ function loadProductData() {
     console.log("Loading data using JSONP technique");
     console.log("Script URL:", scriptUrl);
     
-    // Show loading state
     const productsTable = document.getElementById('products-table');
     if (productsTable) {
         productsTable.innerHTML = '<div class="loading">Loading product data...</div>';
     }
     
-    // Create unique callback name to avoid conflicts
     const callbackName = 'handleData_' + Date.now();
     
-    // Create the global callback function
     window[callbackName] = function(response) {
         console.log('JSONP Response received:', response);
         handleData(response);
-        
-        // Clean up
         delete window[callbackName];
     };
     
-    // Create a script element for JSONP
     const script = document.createElement('script');
     const url = scriptUrl + '?callback=' + callbackName + '&nocache=' + new Date().getTime();
     console.log("Full request URL:", url);
     script.src = url;
     
-    // Add error handling for script loading
     script.onerror = function() {
         showError('Failed to load data from server. Please check your connection and try again.');
         console.error('Script loading failed for URL:', url);
         delete window[callbackName];
     };
     
-    // Clean up script after use
     script.onload = function() {
         console.log('Script loaded successfully');
         setTimeout(() => {
@@ -51,7 +50,6 @@ function loadProductData() {
     
     document.head.appendChild(script);
     
-    // Add timeout to handle cases where the callback never fires
     setTimeout(() => {
         if (window[callbackName]) {
             console.error('JSONP timeout - callback never fired');
@@ -61,10 +59,9 @@ function loadProductData() {
                 script.parentNode.removeChild(script);
             }
         }
-    }, 15000); // 15 second timeout
+    }, 15000);
 }
 
-// This function will be called by the JSONP response
 function handleData(response) {
     console.log('Received response:', response);
     
@@ -87,7 +84,6 @@ function processData(data) {
     
     productData = data;
     
-    // Find and display last updated time if available
     if (productData[0] && productData[0]['Last Updated']) {
         dataLastUpdated = productData[0]['Last Updated'];
         const lastUpdatedElement = document.getElementById('last-updated');
@@ -96,7 +92,6 @@ function processData(data) {
         }
     }
     
-    // Update footer timestamp
     const footerTime = document.getElementById('footer-time');
     if (footerTime) {
         footerTime.textContent = new Date().toLocaleString();
@@ -115,7 +110,6 @@ function populateProductTable() {
         return;
     }
     
-    // Create table structure
     const table = document.createElement('table');
     table.id = 'product-table';
     table.className = 'product-table';
@@ -123,10 +117,8 @@ function populateProductTable() {
     const thead = document.createElement('thead');
     const tbody = document.createElement('tbody');
     
-    // Get headers from first item
     const headers = Object.keys(productData[0]).filter(header => header !== 'Last Updated');
     
-    // Create header row
     const headerRow = document.createElement('tr');
     headers.forEach(header => {
         const th = document.createElement('th');
@@ -135,10 +127,8 @@ function populateProductTable() {
     });
     thead.appendChild(headerRow);
     
-    // Create data rows
     productData.forEach(product => {
         const row = document.createElement('tr');
-        
         headers.forEach(header => {
             const cell = document.createElement('td');
             cell.textContent = product[header] || '-';
@@ -162,14 +152,10 @@ function updateProductCount() {
 
 function showError(message) {
     console.error('Error:', message);
-    
-    // Show error in the products table area
     const productsTable = document.getElementById('products-table');
     if (productsTable) {
         productsTable.innerHTML = `<div class="error-message">${message}</div>`;
     }
-    
-    // Also show in dedicated error element if it exists
     const errorElement = document.getElementById('error-message');
     if (errorElement) {
         errorElement.textContent = message;
@@ -183,7 +169,6 @@ function clearError() {
     }
 }
 
-// Search functionality
 function initializeSearch() {
     const searchInput = document.getElementById('search-input');
     const clearButton = document.getElementById('clear-search');
@@ -203,19 +188,15 @@ function initializeSearch() {
 function performSearch() {
     const searchTerm = document.getElementById('search-input').value.toLowerCase();
     const table = document.getElementById('product-table');
-    
     if (!table) return;
-    
     const rows = table.getElementsByTagName('tbody')[0]?.getElementsByTagName('tr');
     if (!rows) return;
-    
     for (let row of rows) {
         const text = row.textContent.toLowerCase();
         row.style.display = text.includes(searchTerm) ? '' : 'none';
     }
 }
 
-// Refresh functionality
 function initializeRefresh() {
     const refreshBtn = document.getElementById('refresh-btn');
     if (refreshBtn) {
@@ -231,17 +212,40 @@ function initializeRefresh() {
     }
 }
 
-// Export functionality
+// Copy a URL to clipboard and briefly flash the button label
+function copyUrlToClipboard(btn, url) {
+    navigator.clipboard.writeText(url).then(() => {
+        const original = btn.textContent;
+        btn.textContent = 'URL Copied!';
+        btn.style.background = 'var(--primary-dark)';
+        setTimeout(() => {
+            btn.textContent = original;
+            btn.style.background = '';
+        }, 2000);
+    }).catch(() => {
+        // Fallback for browsers that block clipboard without HTTPS
+        prompt('Copy this URL:', url);
+    });
+}
+
 function initializeExport() {
     const csvBtn = document.getElementById('export-csv-btn');
     const xlsxBtn = document.getElementById('export-xlsx-btn');
 
     if (csvBtn) {
         csvBtn.addEventListener('click', () => exportData('csv'));
+        csvBtn.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            copyUrlToClipboard(csvBtn, exportUrls.csv);
+        });
     }
 
     if (xlsxBtn) {
         xlsxBtn.addEventListener('click', () => exportData('xlsx'));
+        xlsxBtn.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            copyUrlToClipboard(xlsxBtn, exportUrls.xlsx);
+        });
     }
 }
 
@@ -250,9 +254,7 @@ function exportData(format) {
         alert('No data to export');
         return;
     }
-    
     const filename = `VADIMPEX_Products_${new Date().toISOString().split('T')[0]}`;
-    
     if (format === 'csv') {
         exportToCSV(filename);
     } else if (format === 'xlsx') {
@@ -266,7 +268,6 @@ function exportToCSV(filename) {
         headers.join(','),
         ...productData.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
     ].join('\n');
-    
     downloadFile(csvContent, filename + '.csv', 'text/csv');
 }
 
@@ -293,7 +294,6 @@ function downloadFile(content, filename, mimeType) {
     URL.revokeObjectURL(url);
 }
 
-// Initialize everything when page loads
 document.addEventListener('DOMContentLoaded', function() {
     loadProductData();
     initializeSearch();

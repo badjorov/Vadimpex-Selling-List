@@ -101,7 +101,7 @@ h1 {
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
 }
 
-#clear-search, #refresh-btn, #export-btn {
+#clear-search, #refresh-btn, #export-csv-btn, #export-xlsx-btn {
     padding: 12px 20px;
     background: var(--primary);
     color: white;
@@ -114,13 +114,7 @@ h1 {
     align-items: center;
 }
 
-#export-btn::after {
-    content: "▾";
-    margin-left: 8px;
-    font-size: 0.8em;
-}
-
-#clear-search:hover, #refresh-btn:hover, #export-btn:hover {
+#clear-search:hover, #refresh-btn:hover, #export-csv-btn:hover, #export-xlsx-btn:hover {
     background: var(--primary-dark);
 }
 
@@ -128,37 +122,6 @@ h1 {
     font-size: 0.9rem;
     color: var(--light-text);
     margin-left: 10px;
-}
-
-/* Export options */
-#export-options {
-    display: none;
-    position: absolute;
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    z-index: 10;
-    margin-top: 5px;
-}
-
-#export-options button {
-    display: block;
-    width: 100%;
-    padding: 10px 20px;
-    background: white;
-    border: none;
-    text-align: left;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-#export-options button:hover {
-    background: var(--secondary);
-}
-
-.export-container {
-    position: relative;
 }
 
 /* Table styles */

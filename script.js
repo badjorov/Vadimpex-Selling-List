@@ -2,11 +2,9 @@
 // Make sure this URL matches your actual deployed Apps Script URL
 const scriptUrl = 'https://script.google.com/macros/s/AKfycby_YlnIx39W54SygtTAx1K-eM1Wf4jSDBOHQej6tyV57fnl2vOnLPNtTkgrfRRA1lSJuw/exec';
 
-// Stable direct-download URLs (for right-click copy)
-const exportUrls = {
-    csv:  scriptUrl + '?format=csv',
-    xlsx: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0xg3Yy-RTLmgOM4pLYpTz_2Z27312GhQttLF1Tjo1rDBPq65tS2J_GbDPnBDQpNdtTl-7O4ZqDvv5/pub?gid=1729295615&single=true&output=xlsx'
-};
+// Stable direct-download URL for CSV (used for right-click copy)
+// This is the Google Sheets published CSV URL - works reliably in any automation tool
+const csvExportUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0xg3Yy-RTLmgOM4pLYpTz_2Z27312GhQttLF1Tjo1rDBPq65tS2J_GbDPnBDQpNdtTl-7O4ZqDvv5/pub?gid=1729295615&single=true&output=csv';
 
 let productData = [];
 let dataLastUpdated = '';
@@ -236,16 +234,13 @@ function initializeExport() {
         csvBtn.addEventListener('click', () => exportData('csv'));
         csvBtn.addEventListener('contextmenu', (e) => {
             e.preventDefault();
-            copyUrlToClipboard(csvBtn, exportUrls.csv);
+            copyUrlToClipboard(csvBtn, csvExportUrl);
         });
     }
 
     if (xlsxBtn) {
         xlsxBtn.addEventListener('click', () => exportData('xlsx'));
-        xlsxBtn.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            copyUrlToClipboard(xlsxBtn, exportUrls.xlsx);
-        });
+        // No right-click URL for XLSX - no reliable direct download URL available
     }
 }
 

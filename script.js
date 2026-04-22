@@ -3,7 +3,6 @@
 const scriptUrl = 'https://script.google.com/macros/s/AKfycby_YlnIx39W54SygtTAx1K-eM1Wf4jSDBOHQej6tyV57fnl2vOnLPNtTkgrfRRA1lSJuw/exec';
 
 // Stable direct-download URL for CSV (used for right-click copy)
-// This is the Google Sheets published CSV URL - works reliably in any automation tool
 const csvExportUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0xg3Yy-RTLmgOM4pLYpTz_2Z27312GhQttLF1Tjo1rDBPq65tS2J_GbDPnBDQpNdtTl-7O4ZqDvv5/pub?gid=1729295615&single=true&output=csv';
 
 let productData = [];
@@ -210,7 +209,6 @@ function initializeRefresh() {
     }
 }
 
-// Copy a URL to clipboard and briefly flash the button label
 function copyUrlToClipboard(btn, url) {
     navigator.clipboard.writeText(url).then(() => {
         const original = btn.textContent;
@@ -221,7 +219,6 @@ function copyUrlToClipboard(btn, url) {
             btn.style.background = '';
         }, 2000);
     }).catch(() => {
-        // Fallback for browsers that block clipboard without HTTPS
         prompt('Copy this URL:', url);
     });
 }
@@ -240,7 +237,6 @@ function initializeExport() {
 
     if (xlsxBtn) {
         xlsxBtn.addEventListener('click', () => exportData('xlsx'));
-        // No right-click URL for XLSX - no reliable direct download URL available
     }
 }
 
@@ -289,9 +285,96 @@ function downloadFile(content, filename, mimeType) {
     URL.revokeObjectURL(url);
 }
 
+// ═══════════════════════════════════════════════════════════════════
+//  API DOCUMENTATION SECTION
+// ═══════════════════════════════════════════════════════════════════
+
+function buildApiSection() {
+    const container = document.getElementById('api-section');
+    if (!container) return;
+
+    // The base URL customers use — same Apps Script, just with ?key=...
+    const apiBase = scriptUrl;
+
+    container.innerHTML = `
+        <div class="api-card">
+            <div class="api-header" id="api-toggle-header">
+                <h2>🔌 API Access</h2>
+                <span class="api-toggle-hint">For developers & automated systems ▼</span>
+            </div>
+
+            <div class="api-body" id="api-body">
+
+                <p class="api-intro">
+                    Customers and partners with an <strong>API key</strong> can connect directly to the
+                    VADIMPEX live stock — no manual download needed. Contact us to request your key.
+                </p>
+
+                <div class="api-formats">
+                    <div class="api-format-card">
+                        <div class="api-format-icon">📄</div>
+                        <div class="api-format-name">JSON</div>
+                        <div class="api-format-desc">Structured data for developers</div>
+                        <code class="api-url-preview">${apiBase}?key=<em>YOUR_KEY</em>&amp;format=json</code>
+                        <button class="btn-copy-url" onclick="copyUrlToClipboard(this, '${apiBase}?key=YOUR_KEY&format=json')">Copy URL</button>
+                    </div>
+                    <div class="api-format-card">
+                        <div class="api-format-icon">📊</div>
+                        <div class="api-format-name">CSV</div>
+                        <div class="api-format-desc">For Excel, Python, any tool</div>
+                        <code class="api-url-preview">${apiBase}?key=<em>YOUR_KEY</em>&amp;format=csv</code>
+                        <button class="btn-copy-url" onclick="copyUrlToClipboard(this, '${apiBase}?key=YOUR_KEY&format=csv')">Copy URL</button>
+                    </div>
+                </div>
+
+                <div class="api-howto">
+                    <h3>How it works</h3>
+                    <ol>
+                        <li><strong>Contact us</strong> to receive your personal API key (e.g. <code>VAD-A3F9B2C1</code>)</li>
+                        <li><strong>Replace <code>YOUR_KEY</code></strong> in the URL above with your key</li>
+                        <li><strong>Call the URL</strong> from your system, script, or automation tool — data is always live</li>
+                        <li>Choose <code>format=json</code> or <code>format=csv</code> depending on your needs</li>
+                    </ol>
+                </div>
+
+                <div class="api-example">
+                    <h3>Example — Python (3 lines)</h3>
+                    <pre><code>import pandas as pd
+df = pd.read_csv("${apiBase}?key=YOUR_KEY&format=csv")
+print(df.head())</code></pre>
+                </div>
+
+                <div class="api-contact">
+                    <p>
+                        🔑 Need an API key? Contact
+                        <a href="mailto:nikolay.badjorov@vadimpex.com">nikolay.badjorov@vadimpex.com</a>
+                    </p>
+                </div>
+
+            </div><!-- /api-body -->
+        </div><!-- /api-card -->
+    `;
+
+    // Collapsible toggle
+    document.getElementById('api-toggle-header').addEventListener('click', () => {
+        const body = document.getElementById('api-body');
+        const hint = document.querySelector('.api-toggle-hint');
+        const isOpen = body.style.display !== 'none';
+        body.style.display = isOpen ? 'none' : 'block';
+        hint.textContent = isOpen
+            ? 'For developers & automated systems ▶'
+            : 'For developers & automated systems ▼';
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════════
+
 document.addEventListener('DOMContentLoaded', function() {
     loadProductData();
     initializeSearch();
     initializeRefresh();
     initializeExport();
+    buildApiSection();
 });

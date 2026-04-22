@@ -201,7 +201,46 @@ tr:hover {
     border-left: 4px solid #c53030;
 }
 
-#product-count {
+#export-csv-btn {
+    position: relative;
+}
+
+#export-csv-btn::after {
+    content: "💡 Right-click to copy direct URL";
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2d3748;
+    color: #fff;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    padding: 6px 10px;
+    border-radius: 5px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 10;
+}
+
+#export-csv-btn::before {
+    content: "";
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #2d3748;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 10;
+}
+
+#export-csv-btn:hover::after,
+#export-csv-btn:hover::before {
+    opacity: 1;
+}
     text-align: right;
     margin-top: 10px;
     font-size: 0.95rem;

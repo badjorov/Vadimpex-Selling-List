@@ -226,6 +226,190 @@ footer {
     color: var(--primary);
 }
 
+/* ═══════════════════════════════════════════════════════
+   API SECTION
+═══════════════════════════════════════════════════════ */
+
+#api-section {
+    margin-top: 40px;
+}
+
+.api-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    overflow: hidden;
+    border-top: 4px solid var(--primary);
+}
+
+.api-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+}
+
+.api-header:hover {
+    background: var(--secondary);
+}
+
+.api-header h2 {
+    color: var(--primary);
+    font-size: 1.4rem;
+    text-align: left;
+    margin: 0;
+}
+
+.api-toggle-hint {
+    font-size: 0.9rem;
+    color: var(--light-text);
+}
+
+.api-body {
+    padding: 0 25px 25px;
+    border-top: 1px solid var(--border);
+}
+
+.api-intro {
+    margin: 18px 0 22px;
+    color: var(--text);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+/* Format cards */
+.api-formats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+}
+
+.api-format-card {
+    flex: 1;
+    min-width: 240px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--secondary);
+}
+
+.api-format-icon {
+    font-size: 1.8rem;
+}
+
+.api-format-name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.api-format-desc {
+    font-size: 0.88rem;
+    color: var(--light-text);
+    margin-bottom: 6px;
+}
+
+.api-url-preview {
+    display: block;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+    color: #444;
+    word-break: break-all;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 8px;
+}
+
+.api-url-preview em {
+    color: var(--primary);
+    font-style: normal;
+    font-weight: bold;
+}
+
+.btn-copy-url {
+    align-self: flex-start;
+    padding: 7px 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+}
+
+.btn-copy-url:hover {
+    background: var(--primary-dark);
+}
+
+/* How-to & example */
+.api-howto, .api-example {
+    margin-bottom: 22px;
+}
+
+.api-howto h3, .api-example h3 {
+    color: var(--primary);
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.api-howto ol {
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 0.95rem;
+}
+
+.api-howto code {
+    background: #f4f4f4;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: var(--primary-dark);
+}
+
+.api-example pre {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 16px 18px;
+    border-radius: 7px;
+    overflow-x: auto;
+    font-size: 0.88rem;
+    line-height: 1.6;
+}
+
+.api-example pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+}
+
+/* Contact strip */
+.api-contact {
+    background: var(--secondary);
+    border-left: 4px solid var(--primary);
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+}
+
+.api-contact a {
+    color: var(--primary);
+    font-weight: 600;
+}
+
 /* Responsive Design */
 @media (max-width: 900px) {
     header {
@@ -248,6 +432,10 @@ footer {
     
     .export-container {
         width: 100%;
+    }
+
+    .api-formats {
+        flex-direction: column;
     }
 }
 

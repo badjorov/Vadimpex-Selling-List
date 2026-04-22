@@ -1,6 +1,6 @@
 // script.js - Using JSONP approach
 // Make sure this URL matches your actual deployed Apps Script URL
-const scriptUrl = 'https://script.google.com/macros/s/AKfycby_YlnIx39W54SygtTAx1K-eM1Wf4jSDBOHQej6tyV57fnl2vOnLPNtTkgrfRRA1lSJuw/exec';
+const scriptUrl = 'https://script.google.com/macros/s/AKfycbyqC36jp10XXbjs7flVxa3TTcFv6rHu3XebRBo6qVlks2l3C3vR0MLHwQ_SfzKbm9XgqA/exec';
 
 // Stable direct-download URL for CSV (used for right-click copy)
 const csvExportUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0xg3Yy-RTLmgOM4pLYpTz_2Z27312GhQttLF1Tjo1rDBPq65tS2J_GbDPnBDQpNdtTl-7O4ZqDvv5/pub?gid=1729295615&single=true&output=csv';

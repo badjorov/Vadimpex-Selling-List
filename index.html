@@ -56,7 +56,6 @@
     </p>
 </div>
     </header>
-
     <main>
         <h1>VADIMPEX Selling List</h1>
         <div class="controls">
@@ -72,23 +71,47 @@
                 <button id="export-csv-btn" title="Left click to download CSV&#10;Right click to copy direct URL">Export CSV 🔗</button>
                 <button id="export-xlsx-btn">Export Excel</button>
             </div>
+            <div class="policy-container">
+                <button type="button" class="vpx-policy-btn" onclick="vpxOpenPolicy()">Warranty &amp; Return Policy</button>
+            </div>
         </div>
         <div id="products-table">
             <div class="loading">Loading product data...</div>
         </div>
         <div id="product-count"></div>
-
         <!-- ── API ACCESS SECTION (built by script.js) ── -->
         <div id="api-section"></div>
-
     </main>
-
     <footer>
         <p>&copy; 2025 VADIMPEX Handles GmbH | All rights reserved. </p>
+        <p><a href="#" class="vpx-policy-link" onclick="vpxOpenPolicy();return false;">Warranty &amp; Return Policy</a></p>
         <p>Last refreshed: <span id="footer-time"></span></p>
         <p>&copy; @BadjoCraft </p>
     </footer>
-
     <script src="script.js"></script>
+
+    <!-- ── Warranty & Return Policy pop-up ── -->
+    <div id="vpxPolicy" class="vpx-overlay" hidden onclick="if(event.target===this)vpxClosePolicy()">
+      <div class="vpx-modal">
+        <button type="button" class="vpx-close" aria-label="Close" onclick="vpxClosePolicy()">&times;</button>
+        <iframe src="warranty-policy.html" title="Vadimpex Warranty &amp; Return Policy"></iframe>
+      </div>
+    </div>
+    <style>
+      .vpx-policy-btn{font:inherit;background:#C8102E;color:#fff;border:0;border-radius:6px;padding:10px 16px;cursor:pointer}
+      .vpx-policy-btn:hover{background:#a50d25}
+      .vpx-policy-link{color:#C8102E;text-decoration:underline;cursor:pointer}
+      .vpx-overlay{position:fixed;inset:0;background:rgba(20,30,55,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999}
+      .vpx-overlay[hidden]{display:none}
+      .vpx-modal{position:relative;background:#fff;border-radius:8px;width:min(860px,100%);height:min(90vh,1000px);box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
+      .vpx-modal iframe{width:100%;height:100%;border:0}
+      .vpx-close{position:absolute;top:8px;right:10px;z-index:2;width:34px;height:34px;border:0;border-radius:50%;background:#C8102E;color:#fff;font-size:22px;line-height:1;cursor:pointer}
+      .vpx-close:hover{background:#a50d25}
+    </style>
+    <script>
+      function vpxOpenPolicy(){document.getElementById('vpxPolicy').hidden=false;document.body.style.overflow='hidden';}
+      function vpxClosePolicy(){document.getElementById('vpxPolicy').hidden=true;document.body.style.overflow='';}
+      document.addEventListener('keydown',function(e){if(e.key==='Escape')vpxClosePolicy();});
+    </script>
 </body>
 </html>

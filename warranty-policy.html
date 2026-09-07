@@ -48,7 +48,12 @@
   }
   .callout strong{color:var(--navy)}
   /* Print button */
-  .toolbar{display:flex; justify-content:flex-end; margin:-8px 0 8px}
+  .toolbar{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin:-8px 0 8px}
+    .back-btn{
+      font:inherit; font-size:13px; color:var(--blue); text-decoration:none;
+      border:1px solid var(--line); border-radius:5px; padding:6px 12px;
+    }
+    .back-btn:hover{background:var(--callout)}
   .print-btn{
     font:inherit; font-size:13px; color:var(--blue); background:transparent;
     border:1px solid var(--line); border-radius:5px; padding:6px 12px; cursor:pointer;
@@ -72,7 +77,10 @@
 <body>
 <main class="sheet">
 
-  <div class="toolbar"><button class="print-btn" onclick="window.print()">Print / Save as PDF</button></div>
+  <div class="toolbar">
+    <a class="back-btn" id="backlink" href="https://vadimpex.com/">&larr; Back to vadimpex.com</a>
+    <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+  </div>
 
   <header class="doc-head">
     <div class="brand">VADIMPEX</div>
@@ -161,5 +169,12 @@
   <footer>VADIMPEX — Wholesale mobile devices &amp; electronics</footer>
 
 </main>
+
+<script>
+/* Return to whichever Vadimpex page the visitor arrived from, so the German
+   site sends them back to the German page. Falls back to the home page. */
+(function(){var r=document.referrer,l=document.getElementById("backlink");
+ if(l&&r&&/^https:\/\/(www\.)?vadimpex\.com\//.test(r)){l.href=r;}})();
+</script>
 </body>
 </html>

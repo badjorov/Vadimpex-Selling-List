@@ -8,55 +8,144 @@ const csvExportUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0xg3Yy-R
 let productData = [];
 let dataLastUpdated = '';
 
+// The live feed is a Google Apps Script. When Google is slow to run it, a request
+// can take 20-45 seconds or fail with a "file cannot be opened" page, and the old
+// 15-second limit turned that into an error for the visitor. The same sheet is
+// also published as CSV by Google Sheets itself, which does not run the script,
+// answers in about a second, and carries identical rows -- only without the
+// "Last Updated" column. So: ask the live feed, show the published copy if the
+// feed has not answered within a few seconds, and swap in the live data if it
+// arrives later. An error appears only when both sources fail.
+const FALLBACK_AFTER_MS = 5000;
+const LIVE_GIVE_UP_MS = 45000;
+
+// Minimal CSV reader that keeps every value as text, so EAN codes are never
+// turned into numbers.
+function parseCsv(text) {
+    const rows = [];
+    let row = [], field = '', quoted = false;
+    for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (quoted) {
+            if (c === '"') {
+                if (text[i + 1] === '"') { field += '"'; i++; } else { quoted = false; }
+            } else {
+                field += c;
+            }
+        } else if (c === '"') {
+            quoted = true;
+        } else if (c === ',') {
+            row.push(field); field = '';
+        } else if (c === '\n') {
+            row.push(field); rows.push(row); row = []; field = '';
+        } else if (c !== '\r') {
+            field += c;
+        }
+    }
+    if (field !== '' || row.length) { row.push(field); rows.push(row); }
+    const header = rows.shift() || [];
+    return rows
+        .filter(r => r.some(v => v !== ''))
+        .map(r => {
+            const obj = {};
+            header.forEach((h, i) => { obj[h] = r[i] !== undefined ? r[i] : ''; });
+            return obj;
+        });
+}
+
+function sameRows(a, b) {
+    const strip = rows => JSON.stringify(rows.map(r => {
+        const o = Object.assign({}, r);
+        delete o['Last Updated'];
+        return o;
+    }));
+    return a.length === b.length && strip(a) === strip(b);
+}
+
 function loadProductData() {
-    console.log("Loading data using JSONP technique");
-    console.log("Script URL:", scriptUrl);
-    
     const productsTable = document.getElementById('products-table');
     if (productsTable) {
         productsTable.innerHTML = '<div class="loading">Loading product data...</div>';
     }
-    
-    const callbackName = 'handleData_' + Date.now();
-    
-    window[callbackName] = function(response) {
-        console.log('JSONP Response received:', response);
-        handleData(response);
-        delete window[callbackName];
-    };
-    
-    const script = document.createElement('script');
-    const url = scriptUrl + '?callback=' + callbackName + '&nocache=' + new Date().getTime();
-    console.log("Full request URL:", url);
-    script.src = url;
-    
-    script.onerror = function() {
-        showError('Failed to load data from server. Please check your connection and try again.');
-        console.error('Script loading failed for URL:', url);
-        delete window[callbackName];
-    };
-    
-    script.onload = function() {
-        console.log('Script loaded successfully');
-        setTimeout(() => {
-            if (script.parentNode) {
-                script.parentNode.removeChild(script);
-            }
-        }, 2000);
-    };
-    
-    document.head.appendChild(script);
-    
-    setTimeout(() => {
-        if (window[callbackName]) {
-            console.error('JSONP timeout - callback never fired');
-            showError('Request timeout. Please try refreshing the page.');
-            delete window[callbackName];
-            if (script.parentNode) {
-                script.parentNode.removeChild(script);
-            }
+
+    const state = { shown: false, live: false, fallbackStarted: false,
+                    liveFailed: false, fallbackFailed: false };
+
+    function failIfNothingWorked() {
+        if (!state.shown && state.liveFailed && state.fallbackFailed) {
+            showError('The stock list could not be loaded just now. Please refresh the page in a minute.');
         }
-    }, 15000);
+    }
+
+    function showPublishedCopy() {
+        if (state.fallbackStarted || state.live) return;
+        state.fallbackStarted = true;
+        fetch(csvExportUrl + '&nocache=' + Date.now())
+            .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+            .then(text => {
+                const rows = parseCsv(text);
+                if (!rows.length) throw new Error('published copy is empty');
+                if (state.live) return;              // the live feed answered first
+                processData(rows);
+                clearError();
+                state.shown = true;
+            })
+            .catch(err => {
+                console.error('Published CSV failed:', err);
+                state.fallbackFailed = true;
+                failIfNothingWorked();
+            });
+    }
+
+    const callbackName = 'handleData_' + Date.now();
+    // Never deleted: a late answer must find its callback rather than throw.
+    window[callbackName] = function (response) {
+        if (!(response && response.success && response.data && response.data.length)) {
+            console.error('Live feed returned no data:', response);
+            state.liveFailed = true;
+            showPublishedCopy();
+            failIfNothingWorked();
+            return;
+        }
+        const late = state.shown && !state.live;
+        state.live = true;
+        if (late && sameRows(response.data, productData)) {
+            // Nothing changed since the published copy was shown. Keep the table,
+            // and anything the visitor has typed into search, and just add the
+            // timestamp the published copy does not carry.
+            productData = response.data;
+            const stamp = response.data[0]['Last Updated'];
+            const el = document.getElementById('last-updated');
+            if (el && stamp) el.textContent = 'Last updated: ' + stamp;
+        } else {
+            processData(response.data);
+            clearError();
+            // Rebuilding the table shows every row again; re-apply any search.
+            if (late && typeof performSearch === 'function') performSearch();
+        }
+        state.shown = true;
+    };
+
+    const script = document.createElement('script');
+    script.src = scriptUrl + '?callback=' + callbackName + '&nocache=' + Date.now();
+    script.onerror = function () {
+        console.error('Live feed request failed');
+        state.liveFailed = true;
+        showPublishedCopy();
+        failIfNothingWorked();
+    };
+    script.onload = function () {
+        setTimeout(() => { if (script.parentNode) script.parentNode.removeChild(script); }, 2000);
+    };
+    document.head.appendChild(script);
+
+    setTimeout(showPublishedCopy, FALLBACK_AFTER_MS);
+    setTimeout(() => {
+        if (!state.live && !state.liveFailed) {
+            state.liveFailed = true;
+            failIfNothingWorked();
+        }
+    }, LIVE_GIVE_UP_MS);
 }
 
 function handleData(response) {
